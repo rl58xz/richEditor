@@ -1,0 +1,28 @@
+{
+  "name": "richEditor",
+  "version": "1.0.0",
+  "description": "简易富文本编辑器",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config ./webpack-config/webpack.prod.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rl58xz/richEditor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rl58xz/richEditor/issues"
+  },
+  "homepage": "https://github.com/rl58xz/richEditor#readme",
+  "devDependencies": {
+    "ts-loader": "^8.0.6",
+    "typescript": "^4.0.3",
+    "webpack": "^5.1.3",
+    "webpack-cli": "^4.1.0",
+    "webpack-merge": "^5.2.0"
+  }
+}
