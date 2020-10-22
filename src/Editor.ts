@@ -32,15 +32,17 @@ export class Editor{
         //工具条创建
         let toolsBar:HTMLDivElement = document.createElement('div');
         toolsBar.id = 'toolsbar';
-        toolsBar.style.borderBottom = '1px solid #eee'
+        toolsBar.style.borderBottom = '1px solid #eee';
+        toolsBar.style.height = '40px'
+        toolsBar.style.width = 'inherit';
         for(let key of Object.keys(this.config)){
             let item = document.createElement('div');
             item.classList.add('toolsitem');
             item.classList.add('editorfundition')
             item.style.display = 'inline-block';
             item.style.height = 'inherit';
-            item.style.lineHeight = '2.5em';
-            item.style.width = '2.5em';
+            item.style.lineHeight = '40px';
+            item.style.width = '40px';
             item.style.textAlign = 'center';
             item.textContent = String(this.config[key].title);
             item.dataset.command = this.config[key].command;
@@ -62,6 +64,8 @@ export class Editor{
         let editorArea:HTMLDivElement = document.createElement('div');
         editorArea.setAttribute('id',"editorarea");
         editorArea.contentEditable = 'true';
+        editorArea.style.height = 'calc(100% - 40px)';
+        editorArea.style.width = 'inherit';
 
         //挂载到页面
         df.appendChild(toolsBar);
@@ -69,16 +73,30 @@ export class Editor{
         this.root.appendChild(df);
 
         //设置点击事件
+        editorArea.onkeydown = function(){
+            var str = editorArea.innerHTML;
+            var val = str.search(/<\/li>/i);
+            if(val < 0){
+                document.execCommand("formatblock", false, "p");
+            }
+        }
+
         let funditionButtons:HTMLCollection = document.getElementsByClassName('editorfundition');
         for(let i = 0; i < funditionButtons.length; i++){
             let funditionButton:HTMLElement = funditionButtons[i] as HTMLElement;
-            funditionButton.addEventListener('click',()=>{
+            funditionButton.addEventListener('click',function(e){
+                e.preventDefault();
                 if(window.getSelection){
                     let range = window.getSelection();
-                    console.log(range);
                 }
-                document.execCommand(funditionButton.dataset.command,false,funditionButton.dataset.params);
+                let result:boolean;
+                if(this.dataset.params) result = document.execCommand(this.dataset.command,false,this.dataset.params);
+                else result = document.execCommand(this.dataset.command)
+                console.log(result);
             })
         }
+
+        editorArea.focus();
+        document.execCommand("formatblock", false, "p");
     }
 }
