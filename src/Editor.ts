@@ -1,14 +1,8 @@
-interface EditorConfig{
-    bold:string;
-    title:string[];
+interface EditorInterface{
+    create():void;
 }
 
-// interface EditorProps{
-//     root:HTMLDivElement;
-//     config:EditorConfig;
-// }
-
-export class Editor{
+export class Editor implements EditorInterface{
 
     //挂载的父节点
     public root:HTMLDivElement;
@@ -19,6 +13,8 @@ export class Editor{
     private toolsBar:HTMLDivElement;
     //用户编辑区域
     private editorArea:HTMLDivElement;
+
+    private nodeName:string;
 
     //功能配置
     public config = {
@@ -166,30 +162,31 @@ export class Editor{
         df.appendChild(this.editorArea);
         this.root.appendChild(df);
 
-        //设置点击事件
-        this.editorArea.onkeydown = () => {
-            var str = this.editorArea.innerHTML;
-            var val = str.search(/<\/li>/i);
-            if(val < 0){
-                document.execCommand("formatblock", false, "p");
-            }
+        //设置键盘输入事件
+        this.editorArea.onkeydown = (e) => {
+            let selection = window.getSelection();
+            document.execCommand("formatblock", false, this.nodeName);
             //更新编辑区域的最后操作的range
-            this.range.selectNode(this.editorArea.lastChild);
+            this.range = selection.getRangeAt(0);
+            //保存最后更改的node的nodeName
+            if(selection.anchorNode.nodeType === 3) this.nodeName = selection.anchorNode.parentNode.nodeName;
+            else this.nodeName = selection.anchorNode.nodeName;
         }
 
         //为各个功能按钮添加事件
         let funditionButtons:HTMLCollection = document.getElementsByClassName('editorfundition');
         for(let i = 0; i < funditionButtons.length; i++){
             let funditionButton:HTMLElement = funditionButtons[i] as HTMLElement;
-            funditionButton.addEventListener('click',(e) => {
-                e.preventDefault();
+            let command = funditionButton.dataset.command;
+            let params = funditionButton.dataset.params || "";
+            funditionButton.addEventListener('click',() => {
                 let section = window.getSelection ? window.getSelection() : document.getSelection();
-                // console.log(section.getRangeAt(0));
                 section.removeAllRanges();
                 section.addRange(this.range);
                 let result:boolean;
-                if(funditionButton.dataset.params) result = document.execCommand(funditionButton.dataset.command,false,funditionButton.dataset.params);
-                else result = document.execCommand(funditionButton.dataset.command);
+                if(params) result = document.execCommand(command,false,params);
+                else result = document.execCommand(command);
+                if(result) this.nodeName = params;
             })
         }
 

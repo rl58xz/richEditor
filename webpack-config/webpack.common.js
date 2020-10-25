@@ -15,5 +15,7 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.js']
     },
-    output:distPath,
+    output:{
+        path:distPath
+    },
 }
