@@ -62,6 +62,7 @@ export function renderToolsBar(config: any): HTMLDivElement {
         }
         toolsBarItemdf.appendChild(item);
     }
+    //功能按钮挂载到工具栏上
     toolsBar.appendChild(toolsBarItemdf);
     return toolsBar;
 }
