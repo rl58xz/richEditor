@@ -1,4 +1,3 @@
-const path = require('path');
 const { srcPath, distPath } = require('./paths');
 
 module.exports = {

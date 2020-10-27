@@ -1,3 +1,5 @@
+import {renderToolsBar} from './render/renderToolsBar';
+
 interface EditorInterface{
     create():void;
 }
@@ -50,6 +52,11 @@ export class Editor implements EditorInterface{
                     command:'formatblock',
                     params:'H5'
                 },
+                {
+                    title:'正文',
+                    command:'formatblock',
+                    params:'p'
+                }
             ]
         },
         color:{
@@ -90,64 +97,7 @@ export class Editor implements EditorInterface{
         let df:DocumentFragment = new DocumentFragment();
 
         //工具条创建
-        this.toolsBar = document.createElement('div');
-        this.toolsBar.id = 'toolsbar';
-        this.toolsBar.style.borderBottom = '1px solid #eee';
-        this.toolsBar.style.height = '40px';
-        this.toolsBar.style.width = 'inherit';
-
-        //读取配置，创建功能按钮
-        let toolsBarItemdf = document.createDocumentFragment();
-        for(let key of Object.keys(this.config)){
-            let item = document.createElement('div');
-            item.classList.add('toolsitem');
-            item.classList.add('editorfundition');
-            item.style.display = 'inline-block';
-            item.style.height = 'inherit';
-            item.style.lineHeight = '40px';
-            item.style.width = '40px';
-            item.style.textAlign = 'center';
-            item.textContent = String(this.config[key].title);
-            if(this.config[key].command){
-                item.dataset.command = this.config[key].command;
-                if(this.config[key].params) item.dataset.params = this.config[key].params;
-                else item.dataset.params = null;
-            }
-            if(this.config[key].children){
-                item.style.position = 'relative';
-                let submenucontainer:HTMLElement = document.createElement('div');
-                // submenucontainer.style.display = 'none';
-                submenucontainer.style.position = 'absolute';
-                submenucontainer.style.left = '0';
-                submenucontainer.style.top = '1.7em';
-                submenucontainer.classList.add('submenucontainer')
-                //无序列表下拉菜单
-                let submenuul = document.createElement('ul');
-                submenuul.style.listStyleType = 'none';
-                submenuul.style.paddingLeft = '0';
-                submenuul.style.border = '1px solid #999'
-                for(let obj of this.config[key].children){
-                    let subMenuItem = document.createElement('li');
-                    //设置内容
-                    subMenuItem.textContent = obj.title || '';
-                    //设置样式
-                    subMenuItem.style.backgroundColor = '#eee';
-                    subMenuItem.style.display = 'block';
-                    subMenuItem.style.padding = '0.1em 1.5em';
-                    subMenuItem.style.borderTop = '1px solid #999';
-                    if(String(obj.params).indexOf('#') > -1) subMenuItem.style.color = obj.params;
-                    subMenuItem.classList.add("editorfundition");
-                    //设置dataset属性
-                    subMenuItem.dataset.command = obj.command;
-                    subMenuItem.dataset.params = obj.params;
-                    submenuul.appendChild(subMenuItem);
-                }
-                submenucontainer.appendChild(submenuul);
-                item.appendChild(submenucontainer);
-            }
-            toolsBarItemdf.appendChild(item);
-        }
-        this.toolsBar.appendChild(toolsBarItemdf);
+        this.toolsBar = renderToolsBar(this.config);
 
         //编辑区域创建
         this.editorArea = document.createElement('div');
@@ -163,14 +113,15 @@ export class Editor implements EditorInterface{
         this.root.appendChild(df);
 
         //设置键盘输入事件
-        this.editorArea.onkeydown = (e) => {
-            let selection = window.getSelection();
-            document.execCommand("formatblock", false, this.nodeName);
+        this.editorArea.onkeydown = () => {
             //更新编辑区域的最后操作的range
-            this.range = selection.getRangeAt(0);
-            //保存最后更改的node的nodeName
-            if(selection.anchorNode.nodeType === 3) this.nodeName = selection.anchorNode.parentNode.nodeName;
-            else this.nodeName = selection.anchorNode.nodeName;
+            let section = window.getSelection ? window.getSelection() : document.getSelection();
+            this.range = section.getRangeAt(0);
+        }
+        
+        //处理回车，默认插入p标签
+        this.editorArea.onkeyup = (e) => {
+            if(e.key === 'Enter') document.execCommand("formatblock", false, 'p');
         }
 
         //为各个功能按钮添加事件
@@ -192,6 +143,7 @@ export class Editor implements EditorInterface{
 
         //编辑区域鼠标事件处理
         this.editorArea.addEventListener('mouseup',()=>{
+            //设置选中区域
             let section = window.getSelection ? window.getSelection() : document.getSelection();
             this.range = section.getRangeAt(0);
         })
