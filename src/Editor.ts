@@ -134,18 +134,40 @@ export class Editor implements EditorInterface{
                 let section = window.getSelection ? window.getSelection() : document.getSelection();
                 section.removeAllRanges();
                 section.addRange(this.range);
+                let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
                 let result:boolean;
                 if(params) result = document.execCommand(command,false,params);
                 else result = document.execCommand(command);
-                if(result) this.nodeName = params;
+                if(result){
+                    this.range.setStart(startContainer,startOffset);
+                    this.range.setEnd(endContainer,0);
+                }
             })
         }
 
         //编辑区域鼠标事件处理
-        this.editorArea.addEventListener('mouseup',()=>{
-            //设置选中区域
-            let section = window.getSelection ? window.getSelection() : document.getSelection();
-            this.range = section.getRangeAt(0);
+        document.addEventListener('mouseup',(e)=>{
+            let selection = window.getSelection ? window.getSelection() : document.getSelection();
+            let edo = e.target as HTMLElement;
+            if(edo.className.indexOf('editorfundition') > -1){
+                console.log(this.range);
+                console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
+                selection.removeAllRanges();
+                selection.addRange(this.range);
+                return;
+            }
+            // let parent:HTMLElement = (selection.anchorNode.nodeType === 1 ? selection.anchorNode : selection.anchorNode.parentElement) as HTMLElement;
+            // while(parent && !(parent.className.indexOf('editorfundition') > -1)){
+            //     parent = parent.parentElement;
+            // }
+            // if(parent && parent.className.indexOf('editorfundition') > -1 && edo.className.indexOf('editorfundition') > -1){
+            //     selection.removeAllRanges();
+            //     selection.addRange(this.range);
+            //     return;
+            // }
+            this.range = selection.getRangeAt(0);
+            console.log(this.range);
+            console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
         })
 
         //初始化编辑区域
