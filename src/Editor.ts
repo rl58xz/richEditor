@@ -4,6 +4,10 @@ interface EditorInterface{
     create():void;
 }
 
+interface Window{
+    range:Range;
+}
+
 export class Editor implements EditorInterface{
 
     //挂载的父节点
@@ -130,17 +134,43 @@ export class Editor implements EditorInterface{
             let funditionButton:HTMLElement = funditionButtons[i] as HTMLElement;
             let command = funditionButton.dataset.command;
             let params = funditionButton.dataset.params || "";
-            funditionButton.addEventListener('click',() => {
+            if(command === 'bold'){
+                funditionButton.addEventListener('click',(e) => {
+                    e.preventDefault();
+                    let section = window.getSelection ? window.getSelection() : document.getSelection();
+                    // let cs = this.range.toString();
+                    // console.log(cs);
+                    section.removeAllRanges();
+                    section.addRange(this.range);
+                    let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
+                    //startContainer = startContainer.cloneNode();
+                    //endContainer = endContainer.cloneNode();
+                    let result:boolean;
+                    if(params) result = document.execCommand(command,false,params);
+                    else result = document.execCommand(command);
+                    if(result){
+                        console.log(this.range.toString());
+                        this.range = document.createRange();
+                        console.log(endContainer);
+                        this.range.selectNode(endContainer.previousSibling);
+                    }
+                })
+            }
+            else funditionButton.addEventListener('click',() => {
                 let section = window.getSelection ? window.getSelection() : document.getSelection();
                 section.removeAllRanges();
                 section.addRange(this.range);
                 let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
+                startContainer = startContainer.cloneNode();
+                //endContainer = endContainer.cloneNode();
                 let result:boolean;
                 if(params) result = document.execCommand(command,false,params);
                 else result = document.execCommand(command);
                 if(result){
+                    this.range = document.createRange();
                     this.range.setStart(startContainer,startOffset);
-                    this.range.setEnd(endContainer,0);
+                    this.range.setEndBefore(endContainer);
+                    console.log(this.range);
                 }
             })
         }
@@ -148,10 +178,10 @@ export class Editor implements EditorInterface{
         //编辑区域鼠标事件处理
         document.addEventListener('mouseup',(e)=>{
             let selection = window.getSelection ? window.getSelection() : document.getSelection();
-            let edo = e.target as HTMLElement;
-            if(edo.className.indexOf('editorfundition') > -1){
-                console.log(this.range);
-                console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
+            let etarget = e.target as HTMLElement;
+            if(etarget.className.indexOf('editorfundition') > -1){
+                // console.log(this.range);
+                 //console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
                 selection.removeAllRanges();
                 selection.addRange(this.range);
                 return;
@@ -166,8 +196,8 @@ export class Editor implements EditorInterface{
             //     return;
             // }
             this.range = selection.getRangeAt(0);
-            console.log(this.range);
-            console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
+            // console.log(this.range);
+            // console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
         })
 
         //初始化编辑区域
