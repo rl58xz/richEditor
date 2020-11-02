@@ -138,22 +138,16 @@ export class Editor implements EditorInterface{
                 funditionButton.addEventListener('click',(e) => {
                     e.preventDefault();
                     let section = window.getSelection ? window.getSelection() : document.getSelection();
-                    // let cs = this.range.toString();
-                    // console.log(cs);
                     section.removeAllRanges();
                     section.addRange(this.range);
                     let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
-                    //startContainer = startContainer.cloneNode();
-                    //endContainer = endContainer.cloneNode();
                     let result:boolean;
                     if(params) result = document.execCommand(command,false,params);
                     else result = document.execCommand(command);
                     if(result){
-                        console.log(this.range.toString());
-                        this.range = document.createRange();
-                        console.log(endContainer);
-                        this.range.selectNode(endContainer.previousSibling);
+                        if(endContainer.previousSibling) this.range.selectNode(endContainer.previousSibling);
                     }
+                    section.addRange(this.range);
                 })
             }
             else funditionButton.addEventListener('click',() => {
