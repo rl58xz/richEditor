@@ -141,11 +141,26 @@ export class Editor implements EditorInterface{
                     section.removeAllRanges();
                     section.addRange(this.range);
                     let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
-                    let result:boolean;
+                    let parentStart = startContainer.parentNode;
+                    let indexStart = 0;
+                    for(let i = 0; i < parentStart.childNodes.length; i++){
+                        if(startContainer === parentStart.childNodes[i]) indexStart = i;
+                    }
+
+                    let parentEnd = endContainer.parentNode;
+                    let indexEnd = 0;
+                    let len = parentEnd.childNodes.length;
+                    for(let i = 0; i < len; i++){
+                        if(endContainer === parentEnd.childNodes[i]) indexEnd = len - i;
+                    }
+                    console.log(indexEnd);
+
+                    let result;
                     if(params) result = document.execCommand(command,false,params);
                     else result = document.execCommand(command);
                     if(result){
-                        if(endContainer.previousSibling) this.range.selectNode(endContainer.previousSibling);
+                        this.range.setStart(parentStart.childNodes[indexStart],startOffset);
+                        this.range.setEnd(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd],0);
                     }
                     section.addRange(this.range);
                 })
