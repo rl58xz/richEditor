@@ -134,62 +134,16 @@ export class Editor implements EditorInterface{
             let funditionButton:HTMLElement = funditionButtons[i] as HTMLElement;
             let command = funditionButton.dataset.command;
             let params = funditionButton.dataset.params || "";
-            if(command === 'bold'){
-                funditionButton.addEventListener('click',(e) => {
-                    e.preventDefault();
-                    let section = window.getSelection ? window.getSelection() : document.getSelection();
-                    section.removeAllRanges();
-                    section.addRange(this.range);
-                    let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
-
-                    //定位range start
-                    let parentStart = startContainer.parentNode;
-                    let indexStart = 0;
-                    for(let i = 0; i < parentStart.childNodes.length; i++){
-                        if(startContainer === parentStart.childNodes[i]) indexStart = i;
-                    }
-
-                    //定位 range end
-                    let parentEnd = endContainer.parentNode;
-                    let indexEnd = 0;
-                    let len = parentEnd.childNodes.length;
-                    for(let i = 0; i < len; i++){
-                        if(endContainer === parentEnd.childNodes[i]){
-                            indexEnd = len - i;
-                        }
-                    }
-                    let flag = 0;
-                    if(indexEnd === 1 && endContainer.textContent.length === endOffset) flag = 1;
-                    console.log(flag);
-                    let result;
-                    if(params) result = document.execCommand(command,false,params);
-                    else result = document.execCommand(command);
-                    if(result){
-                        this.range.setStart(parentStart.childNodes[indexStart],startOffset);
-                        console.log(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].nodeType);
-                        let end = parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].nodeType === 1 ? parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].childNodes.length : parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].textContent.length;
-                        if(flag) this.range.setEnd(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd],end);
-                        else this.range.setEnd(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd],0);
-                    }
-                    section.addRange(this.range);
-                })
-            }
-            else funditionButton.addEventListener('click',() => {
+            funditionButton.addEventListener('click',(e) => {
+                e.preventDefault();
                 let section = window.getSelection ? window.getSelection() : document.getSelection();
                 section.removeAllRanges();
                 section.addRange(this.range);
-                let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
-                startContainer = startContainer.cloneNode();
-                //endContainer = endContainer.cloneNode();
-                let result:boolean;
+                let result;
                 if(params) result = document.execCommand(command,false,params);
                 else result = document.execCommand(command);
-                if(result){
-                    this.range = document.createRange();
-                    this.range.setStart(startContainer,startOffset);
-                    this.range.setEndBefore(endContainer);
-                    console.log(this.range);
-                }
+                this.range = section.getRangeAt(0);
+                section.addRange(this.range);
             })
         }
 
@@ -198,24 +152,11 @@ export class Editor implements EditorInterface{
             let selection = window.getSelection ? window.getSelection() : document.getSelection();
             let etarget = e.target as HTMLElement;
             if(etarget.className.indexOf('editorfundition') > -1){
-                // console.log(this.range);
-                 //console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
                 selection.removeAllRanges();
                 selection.addRange(this.range);
                 return;
             }
-            // let parent:HTMLElement = (selection.anchorNode.nodeType === 1 ? selection.anchorNode : selection.anchorNode.parentElement) as HTMLElement;
-            // while(parent && !(parent.className.indexOf('editorfundition') > -1)){
-            //     parent = parent.parentElement;
-            // }
-            // if(parent && parent.className.indexOf('editorfundition') > -1 && edo.className.indexOf('editorfundition') > -1){
-            //     selection.removeAllRanges();
-            //     selection.addRange(this.range);
-            //     return;
-            // }
             this.range = selection.getRangeAt(0);
-            // console.log(this.range);
-            // console.log(this.range.startContainer,this.range.startOffset,this.range.endContainer,this.range.endOffset);
         })
 
         //初始化编辑区域
