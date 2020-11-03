@@ -141,26 +141,35 @@ export class Editor implements EditorInterface{
                     section.removeAllRanges();
                     section.addRange(this.range);
                     let {startContainer,startOffset,endContainer,endOffset,collapsed} = this.range;
+
+                    //定位range start
                     let parentStart = startContainer.parentNode;
                     let indexStart = 0;
                     for(let i = 0; i < parentStart.childNodes.length; i++){
                         if(startContainer === parentStart.childNodes[i]) indexStart = i;
                     }
 
+                    //定位 range end
                     let parentEnd = endContainer.parentNode;
                     let indexEnd = 0;
                     let len = parentEnd.childNodes.length;
                     for(let i = 0; i < len; i++){
-                        if(endContainer === parentEnd.childNodes[i]) indexEnd = len - i;
+                        if(endContainer === parentEnd.childNodes[i]){
+                            indexEnd = len - i;
+                        }
                     }
-                    console.log(indexEnd);
-
+                    let flag = 0;
+                    if(indexEnd === 1 && endContainer.textContent.length === endOffset) flag = 1;
+                    console.log(flag);
                     let result;
                     if(params) result = document.execCommand(command,false,params);
                     else result = document.execCommand(command);
                     if(result){
                         this.range.setStart(parentStart.childNodes[indexStart],startOffset);
-                        this.range.setEnd(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd],0);
+                        console.log(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].nodeType);
+                        let end = parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].nodeType === 1 ? parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].childNodes.length : parentEnd.childNodes[parentEnd.childNodes.length - indexEnd].textContent.length;
+                        if(flag) this.range.setEnd(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd],end);
+                        else this.range.setEnd(parentEnd.childNodes[parentEnd.childNodes.length - indexEnd],0);
                     }
                     section.addRange(this.range);
                 })
